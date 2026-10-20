@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>实验室 · 图学馆</title>
+<link rel="stylesheet" href="assets/css/gallery.css">
+</head>
+<body>
+
+<header class="hall-head">
+  <div class="wrap">
+    <p class="eyebrow">Laboratory</p>
+    <h1>实 验 室</h1>
+    <p class="en">Tools you can take with you.</p>
+    <p class="lead">
+      五个展厅讲的是「道理」，实验室给你「工具」：
+      按任务选图表、检查配色是否色盲友好、亲手验证「为什么长度比面积好读」。
+      所有结论都能在这里亲自复现。
+    </p>
+    <div class="kicker">
+      <span class="tag">图表明鉴</span>
+      <span class="tag cobalt">配色检影</span>
+      <span class="tag jade">感知测谎仪</span>
+      <span class="tag">图表解剖</span>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="layout">
+    <aside class="toc">
+      <h4>工具目录</h4>
+      <ol>
+        <li><a href="#t1">图表明鉴 · 选图器</a></li>
+        <li><a href="#t2">配色检影 · 色盲检验</a></li>
+        <li><a href="#t3">感知测谎仪 · Cleveland 实测</a></li>
+        <li><a href="#t4">图表解剖 · 读图训练</a></li>
+      </ol>
+      <div class="toc-note">
+        这里每个工具都不是「演示」，而是你日后做图表时可以随手回来用的检查器。
+      </div>
+    </aside>
+
+    <main>
+
+      <!-- ════════ T1 图表明鉴 ════════ -->
+      <section class="sec rv" id="t1">
+        <h2><span class="n">T1</span>图表明鉴：按任务选图表</h2>
+        <p class="sub">先想清楚「你想让读者看出什么」，再选图。</p>
+
+        <div class="demo">
+          <div class="demo-head"><span class="dt">工具 · 任务 → 推荐图形</span><span class="dsub">点击任务，查推荐与理由</span></div>
+          <div class="demo-body">
+            <div class="chips" id="taskChips" style="margin-bottom:14px"></div>
+            <div id="ruleCards"></div>
+          </div>
+        </div>
+
+        <div class="note key">
+          <h4><span class="ic">⭐</span>用法</h4>
+          <p>拿到数据先别急着画图。问自己一句：<strong>我希望读者第一眼看出什么？</strong>
+          答案就是「任务」。来这里对号入座，再看推荐星标高的图形——那是被认知科学验证过的选择。</p>
+        </div>
+      </section>
+
+      <!-- ════════ T2 配色检影 ════════ -->
+      <section class="sec rv" id="t2">
+        <h2><span class="n">T2</span>配色检影：色盲友好检验</h2>
+        <p class="sub">约 8% 的男性有红绿色觉障碍——你的图他们看得见吗？</p>
+
+        <div class="demo">
+          <div class="demo-head"><span class="dt">工具 · 配色方案 × 色觉模拟</span><span class="dsub">选一套配色，看四种视野</span></div>
+          <div class="demo-body">
+            <div class="chips" id="palChips" style="margin-bottom:14px"></div>
+            <div id="palView"></div>
+          </div>
+          <div class="demo-foot"><span class="rd" id="palStat"></span></div>
+        </div>
+
+        <div class="note tip">
+          <h4><span class="ic">💡</span>检验标准</h4>
+          <p>在「绿色盲（Deuteranopia）」视野下，如果你的分类仍然可区分、数据条仍然可读，
+          这套配色才算合格。<strong>Okabe-Ito 与 Paul Tol 系列就是为这一标准设计的</strong>；
+          而很多软件默认配色在这里会「翻车」。</p>
+        </div>
+      </section>
+
+      <!-- ════════ T3 感知测谎仪 ════════ -->
+      <section class="sec rv" id="t3">
+        <h2><span class="n">T3</span>感知测谎仪：Cleveland 排序亲自验证</h2>
+        <p class="sub">「长度比面积好读」不是规矩，是实验结论。不信？测一测你自己。</p>
+
+        <p>
+          玩法：屏幕上会随机出现两个图形元素，编码两个数值。拖动滑块估计<strong>「B 是 A 的几倍」</strong>，
+          提交后看误差。每种视觉通道测 5 次，最后给出你的个人误差曲线——
+          它大概率会复现 Cleveland &amp; McGill (1984) 的排序。
+        </p>
+
+        <div class="demo">
+          <div class="demo-head">
+            <span class="dt">工具 · 视觉判断测试</span>
+            <span class="dsub" id="quizSub">选择一个视觉通道开始</span>
+            <span class="spacer"></span>
+            <button class="btn-sm" id="quizNext" style="display:none">提交，下一题</button>
+          </div>
+          <div class="demo-body">
+            <div class="chips" id="quizChips" style="margin-bottom:12px"></div>
+            <div id="quizStage"></div>
+            <div id="quizInput" style="margin-top:10px;display:none">
+              <label style="font-size:13px;color:var(--ink-2)">B 是 A 的 <b id="quizEst" style="font-family:var(--mono);color:var(--cobalt)">1.0</b> 倍</label>
+              <input type="range" id="quizSlider" min="10" max="200" value="100" style="width:320px;vertical-align:middle;margin-left:10px">
+            </div>
+            <div id="quizResult" style="margin-top:14px"></div>
+          </div>
+          <div class="demo-foot"><span class="rd" id="quizStat">提示：凭直觉估，越快越准——这正是「前注意加工」</span></div>
+        </div>
+
+        <div class="note warn">
+          <h4><span class="ic">⚠</span>结论先行</h4>
+          <p>几乎所有人测完都会发现：<strong>「位置」误差最小，「面积」误差最大</strong>。
+          这就是课件里「条形图优于饼图、饼图优于气泡图」的全部理由——
+          不是审美偏好，是生理限制。</p>
+        </div>
+      </section>
+
+      <!-- ════════ T4 图表解剖 ════════ -->
+      <section class="sec rv" id="t4">
+        <h2><span class="n">T4</span>图表解剖：一张图的「图层」</h2>
+        <p class="sub">把一张合格图表拆成解剖学标注，对照检查自己的图。</p>
+
+        <div class="demo">
+          <div class="demo-head"><span class="dt">工具 · 悬停看每一层的职责</span><span class="dsub">移过标注点看说明</span></div>
+          <div class="demo-body"><div id="anatomy"></div></div>
+        </div>
+
+        <div class="note key">
+          <h4><span class="ic">⭐</span>自查清单</h4>
+          <ul>
+            <li>标题说的是<strong>结论</strong>还是「XX 图」？（应写结论）</li>
+            <li>坐标轴有没有<strong>单位</strong>？有没有不必要的小数位？</li>
+            <li>图例能否<strong>直接标注到图元</strong>上？（少让读者来回对照）</li>
+            <li>来源与时间口径<strong>写在角落里</strong>了吗？</li>
+          </ul>
+        </div>
+      </section>
+
+      <div style="padding:10px 0 40px;display:flex;gap:12px;flex-wrap:wrap">
+        <a class="btn ghost" href="ch05.html">← 回第五展厅</a>
+        <a class="btn gold" href="index.html">回门厅</a>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<script src="assets/js/d3.v7.min.js"></script>
+<script src="assets/js/common.js"></script>
+<script src="assets/js/refs.js"></script>
+<script src="assets/js/lab.js"></script>
+</body>
+</html>
