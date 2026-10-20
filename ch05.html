@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>第五展厅 · 时序数据 | 图学馆</title>
+<link rel="stylesheet" href="assets/css/gallery.css">
+</head>
+<body>
+
+<header class="hall-head">
+  <div class="wrap">
+    <p class="eyebrow">Hall 05 · Time Series</p>
+    <h1>第 五 展 厅 · 时 序 数 据</h1>
+    <p class="en">Time has five properties — find the cycle, change the chart.</p>
+    <p class="lead">
+      时间不只是「横轴」。它有<strong>五种属性</strong>：时间点、时间区间、顺序、周期、粒度。
+      一旦识别出「周期」，就该把折线换成<strong>日历热图</strong>或<strong>螺旋图</strong>——
+      本厅用 1949–1960 年的航班乘客数据逐一演示。
+    </p>
+    <div class="kicker">
+      <span class="tag">时间五属性</span>
+      <span class="tag cobalt">折线图</span>
+      <span class="tag cobalt">日历热图</span>
+      <span class="tag jade">阿基米德螺旋</span>
+      <span class="tag">Storyline</span>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="layout">
+
+    <aside class="toc">
+      <h4>本厅目录</h4>
+      <ol>
+        <li><a href="#s1">5.1 时间五属性</a></li>
+        <li><a href="#s2">5.2 折线图</a></li>
+        <li><a href="#s3">5.3 日历热图</a></li>
+        <li><a href="#s4">5.4 阿基米德螺旋</a></li>
+        <li><a href="#s5">5.5 Storyline 故事线</a></li>
+      </ol>
+      <div class="toc-note">
+        数据：<code>flights.csv</code>（1949–1960 年国际航线月度乘客数，144 个月，真实经典数据集）。
+      </div>
+    </aside>
+
+    <main>
+
+      <!-- ════════ 5.1 ════════ -->
+      <section class="sec rv" id="s1">
+        <h2><span class="n">5.1</span>时间的五种属性</h2>
+        <p class="sub">同样的「时间」，在不同问题里是完全不同的东西。</p>
+
+        <div class="demo">
+          <div class="demo-head"><span class="dt">演示 · 五种时间属性</span><span class="dsub">点击切换，看各自对应的图形</span></div>
+          <div class="demo-body">
+            <div class="chips" id="timeChips" style="margin-bottom:14px"></div>
+            <div id="timeInfo"></div>
+          </div>
+        </div>
+
+        <div class="note key">
+          <h4><span class="ic">⭐</span>关键点：属性决定图形</h4>
+          <ul>
+            <li>看<strong>趋势</strong>（顺序）→ 折线图</li>
+            <li>看<strong>周期</strong>（每年/每周重复）→ 日历热图、螺旋图、径向图</li>
+            <li>看<strong>粒度</strong>（年/月/日同时存在）→ 交互式下钻或小型多图</li>
+            <li>看<strong>区间重叠</strong>（谁在何时在一起）→ Storyline、甘特图</li>
+          </ul>
+        </div>
+
+        <div class="donebox" data-sec="ch05-s1"></div>
+      </section>
+
+      <!-- ════════ 5.2 ════════ -->
+      <section class="sec rv" id="s2">
+        <h2><span class="n">5.2</span>折线图：趋势的首选</h2>
+        <p class="sub">144 个月，一条线——先看清「趋势 + 季节」两件事。</p>
+
+        <div class="demo">
+          <div class="demo-head"><span class="dt">演示 · 航班乘客 1949–1960</span><span class="dsub">移动鼠标查看具体月份数值</span></div>
+          <div class="demo-body"><div id="lineChart"></div></div>
+          <div class="demo-foot"><span class="rd">能一眼看出：① 整体逐年上升（趋势）② 每年都有规律的起伏（季节）</span></div>
+        </div>
+
+        <div class="note tip">
+          <h4><span class="ic">💡</span>折线图的适用边界</h4>
+          <p>折线擅长「少量序列 + 长趋势」。线条超过 5 条就该改用<strong>小型多图（small multiples）</strong>；
+          想看清每年内部的周期结构，就该换日历热图——下一节。</p>
+        </div>
+
+        <div class="donebox" data-sec="ch05-s2"></div>
+      </section>
+
+      <!-- ════════ 5.3 ════════ -->
+      <section class="sec rv" id="s3">
+        <h2><span class="n">5.3</span>日历热图：把周期「摊开」</h2>
+        <p class="sub">van Wijk 的经典做法：行是年，列是月，颜色是数值。</p>
+
+        <div class="demo">
+          <div class="demo-head"><span class="dt">演示 · 乘客数年 × 月热力矩阵</span><span class="dsub">悬停看数值 · 一眼定位旺季</span></div>
+          <div class="demo-body"><div id="calChart"></div></div>
+          <div class="demo-foot"><span class="rd">列（月份）出现整齐的深色带 —— 周期结构被直接「摊开」在眼前</span></div>
+        </div>
+
+        <div class="note key">
+          <h4><span class="ic">⭐</span>关键点：什么时候日历热图优于折线</h4>
+          <p>当你关心的是<strong>「每年/每周的固定规律」</strong>（哪个月是旺季、周末是否低谷），
+          折线的重复波纹反而难读；日历热图把「周期」变成对齐的列，规律一眼可见。
+          这也是 GitHub 提交热图、股票日历图采用的同一原理。</p>
+        </div>
+
+        <div class="donebox" data-sec="ch05-s3"></div>
+      </section>
+
+      <!-- ════════ 5.4 ════════ -->
+      <section class="sec rv" id="s4">
+        <h2><span class="n">5.4</span>阿基米德螺旋：把周期「卷」起来</h2>
+        <p class="sub">时间是圆的——把每年的 12 个月映射到同一圈。</p>
+
+        <p>
+          螺旋图把线性时间绕成阿基米德螺线：每转一圈是一年，半径随年份增大。
+          于是<strong>相同月份在径向对齐</strong>，周期结构变成了放射状的条纹。
+          它比日历热图更紧凑，适合强调「周而复始」。
+        </p>
+
+        <div class="demo">
+          <div class="demo-head"><span class="dt">演示 · 航班乘客螺旋图</span><span class="dsub">悬停看月份 · 12 圈对齐即周期</span></div>
+          <div class="demo-body"><div id="spiralChart"></div></div>
+          <div class="demo-foot"><span class="rd" id="spiralStat"></span></div>
+        </div>
+
+        <div class="note warn">
+          <h4><span class="ic">⚠</span>坑：螺旋图不易精确读数</h4>
+          <p>螺旋图牺牲了精确读数换取周期直觉。<strong>用来「发现规律」很好，用来「报数」不行</strong>——
+          精确数值仍要回到折线图或表格。两者是互补关系，不是替代关系。</p>
+        </div>
+
+        <div class="donebox" data-sec="ch05-s4"></div>
+      </section>
+
+      <!-- ════════ 5.5 ════════ -->
+      <section class="sec rv" id="s5">
+        <h2><span class="n">5.5</span>Storyline 故事线：谁在何时在一起</h2>
+        <p class="sub">当「区间重叠」本身是重点，用 Storyline。</p>
+
+        <p>
+          以《侏罗纪公园》为例（可视化领域的经典教学案例）：
+          每个角色是一条横贯全片的曲线，<strong>同一时刻在一起的角色被并排靠拢</strong>。
+          关键算法是「排序」——合理安排角色上下位置，最大限度减少曲线交叉。
+        </p>
+
+        <div class="demo">
+          <div class="demo-head">
+            <span class="dt">演示 · 角色故事线（教材经典案例重构）</span>
+            <span class="dsub">切换排序，看交叉次数的变化</span>
+            <span class="spacer"></span>
+            <button class="btn-sm" id="storyToggle">切换为优化排序</button>
+          </div>
+          <div class="demo-body"><div id="storyChart"></div></div>
+          <div class="demo-foot"><span class="rd" id="storyStat"></span></div>
+        </div>
+
+        <div class="note key">
+          <h4><span class="ic">⭐</span>关键点：Storyline 的灵魂是排序优化</h4>
+          <p>交叉越少越易读。原论文（Tanahashi &amp; Ma 2012）把这个问题建模为逐段的排序优化。
+          下面的演示里，<strong>优化排序能把交叉次数从几十降到个位数</strong>——这就是算法的价值。
+          （数据为教学重构，仅演示技术原理）</p>
+        </div>
+
+        <div class="donebox" data-sec="ch05-s5"></div>
+      </section>
+
+      <div style="padding:10px 0 40px;display:flex;gap:12px;flex-wrap:wrap">
+        <a class="btn ghost" href="ch04.html">← 上一展厅：低维数据</a>
+        <a class="btn gold" href="lab.html">前往实验室 →</a>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<script src="assets/js/d3.v7.min.js"></script>
+<script src="assets/js/common.js"></script>
+<script src="assets/js/refs.js"></script>
+<script src="assets/js/ch05.js"></script>
+</body>
+</html>
