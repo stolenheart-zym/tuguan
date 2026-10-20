@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>第四展厅 · 低维数据 | 图学馆</title>
+<link rel="stylesheet" href="assets/css/gallery.css">
+</head>
+<body>
+
+<header class="hall-head">
+  <div class="wrap">
+    <p class="eyebrow">Hall 04 · Low-Dimensional</p>
+    <h1>第 四 展 厅 · 低 维 数 据</h1>
+    <p class="en">A scatter plot is a beginning, not an answer.</p>
+    <p class="lead">
+      散点图画完只是开始。本厅用美国 50 州犯罪数据与企鹅数据做四件事：
+      <strong>把绝对量换成人均、把线性轴换成对数轴、加一条拟合线、把折线调整到 45°</strong>——
+      每一步都在让图更接近「能回答问题」。
+    </p>
+    <div class="kicker">
+      <span class="tag cobalt">总量 → 人均</span>
+      <span class="tag cobalt">线性 / 对数轴</span>
+      <span class="tag cobalt">曲线拟合</span>
+      <span class="tag">Cleveland 45°</span>
+      <span class="tag jade">等值线</span>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="layout">
+
+    <aside class="toc">
+      <h4>本厅目录</h4>
+      <ol>
+        <li><a href="#s1">4.1 数据转换</a></li>
+        <li><a href="#s2">4.2 坐标轴变换</a></li>
+        <li><a href="#s3">4.3 曲线拟合</a></li>
+        <li><a href="#s4">4.4 倾角感知 45°</a></li>
+        <li><a href="#s5">4.5 等值线</a></li>
+      </ol>
+      <div class="toc-note">
+        数据：<code>crime.csv</code>（美国 50 州，真实）与
+        <code>penguins.csv</code>（344 只企鹅，真实）。
+      </div>
+    </aside>
+
+    <main>
+
+      <!-- ════════ 4.1 ════════ -->
+      <section class="sec rv" id="s1">
+        <h2><span class="n">4.1</span>数据转换：总量 → 人均</h2>
+        <p class="sub">同一个问题，两种答案——取决于你有没有除以人口。</p>
+
+        <p>
+          「哪个州谋杀案最多？」按<strong>总量</strong>排，加利福尼亚第一；按<strong>人均</strong>排，
+          加州根本排不进前列。这不是图表技巧，而是<strong>问题本身变了</strong>：
+          前者回答「案件发生在哪里」，后者回答「哪里的人更可能遇害」。
+        </p>
+
+        <div class="demo">
+          <div class="demo-head">
+            <span class="dt">演示 · 谋杀案排名</span>
+            <span class="dsub">切换「总量 / 人均」，看排名如何翻盘</span>
+            <span class="spacer"></span>
+            <button class="btn-sm on" data-m="count">总量（件）</button>
+            <button class="btn-sm" data-m="rate">人均（每 10 万人）</button>
+          </div>
+          <div class="demo-body"><div id="rateChart"></div></div>
+          <div class="demo-foot"><span class="rd" id="rateStat"></span></div>
+        </div>
+
+        <div class="note key">
+          <h4><span class="ic">⭐</span>关键点：先标准化，再比较</h4>
+          <p>凡是比较「规模不同的总体」之间的指标，几乎都应该做<strong>标准化</strong>：
+          犯罪率 = 案件数 ÷ 人口、增长率 = 增量 ÷ 基数、人均 GDP = GDP ÷ 人口。
+          不除以基数的绝对量，比较的是「总体大小」而不是「现象强度」。</p>
+        </div>
+
+        <div class="donebox" data-sec="ch04-s1"></div>
+      </section>
+
+      <!-- ════════ 4.2 ════════ -->
+      <section class="sec rv" id="s2">
+        <h2><span class="n">4.2</span>坐标轴变换：什么时候该用对数轴</h2>
+        <p class="sub">线性轴看「差」，对数轴看「倍」。</p>
+
+        <div class="demo">
+          <div class="demo-head">
+            <span class="dt">演示 · 人口 vs 谋杀案数</span>
+            <span class="dsub">切换两轴的线性 / 对数，观察点的分布</span>
+          </div>
+          <div class="demo-body">
+            <div class="ctl">
+              <label>X 轴（人口）：<select id="axX"><option value="linear">线性</option><option value="log" selected>对数</option></select></label>
+              <label>Y 轴（谋杀案）：<select id="axY"><option value="linear">线性</option><option value="log" selected>对数</option></select></label>
+            </div>
+            <div id="axisChart"></div>
+          </div>
+          <div class="demo-foot"><span class="rd" id="axisStat"></span></div>
+        </div>
+
+        <div class="note key">
+          <h4><span class="ic">⭐</span>关键点：对数轴的三个信号</h4>
+          <ul>
+            <li>数据跨越<strong>多个数量级</strong>（人口从 50 万到 3000 万）。</li>
+            <li>你关心的是<strong>比例 / 倍数</strong>关系，而不是绝对差值。</li>
+            <li>「均匀分布的指数关系」在对数轴上会变成直线，更容易识别。</li>
+          </ul>
+        </div>
+
+        <div class="note warn">
+          <h4><span class="ic">⚠</span>坑：对数轴不能表示 0 和负数</h4>
+          <p><code>log(0)</code> 无定义，<code>log(负数)</code> 不存在。数据里有 0 时要先处理（+1、或换用 symlog 轴），否则那些点会静默消失，造成误导。</p>
+        </div>
+
+        <div class="donebox" data-sec="ch04-s2"></div>
+      </section>
+
+      <!-- ════════ 4.3 ════════ -->
+      <section class="sec rv" id="s3">
+        <h2><span class="n">4.3</span>曲线拟合：让散点「说出」趋势</h2>
+        <p class="sub">拟合线不是装饰，是对「关系」的一次显式建模。</p>
+
+        <div class="demo">
+          <div class="demo-head">
+            <span class="dt">演示 · 企鹅体重 vs 鳍长</span>
+            <span class="dsub">切换拟合方式，看残差</span>
+          </div>
+          <div class="demo-body">
+            <div class="ctl">
+              <span style="font-size:13px">拟合方式：</span>
+              <button class="chip on" data-f="none">无</button>
+              <button class="chip" data-f="linear">线性</button>
+              <button class="chip" data-f="quad">二次</button>
+              <button class="chip" data-f="cubic">三次</button>
+              <button class="chip" data-f="movavg">移动平均</button>
+            </div>
+            <div id="fitChart"></div>
+          </div>
+          <div class="demo-foot"><span class="rd" id="fitStat"></span></div>
+        </div>
+
+        <div class="note key">
+          <h4><span class="ic">⭐</span>关键点：阶数越高越「贴合」，越可能「过拟合」</h4>
+          <p>三次曲线会跟着噪声拐来拐去，R² 更高却不一定更真实。判断标准是<strong>残差</strong>：
+          如果残差还呈现系统性形状（比如 U 形），说明模型漏掉了结构；如果残差是随机噪声，模型就够了。</p>
+        </div>
+
+        <div class="donebox" data-sec="ch04-s3"></div>
+      </section>
+
+      <!-- ════════ 4.4 ════════ -->
+      <section class="sec rv" id="s4">
+        <h2><span class="n">4.4</span>倾角感知：把折线 Banking 到 45°</h2>
+        <p class="sub">Cleveland：人最擅长判读接近 45° 的斜率。</p>
+
+        <p>
+          同一条折线，压扁了看不出波动，拉高了又全是尖峰。
+          Cleveland 的建议是：调整图的长宽比，让折线的<strong>平均斜率接近 45°</strong>，
+          这时人对「变化快慢」的判读最准。
+        </p>
+
+        <div class="demo">
+          <div class="demo-head">
+            <span class="dt">演示 · 航班乘客序列的 Banking</span>
+            <span class="dsub">拖动长宽比，感受斜率可读性的变化</span>
+          </div>
+          <div class="demo-body">
+            <div class="ctl"><label>长宽比 <input type="range" id="aspR" min="5" max="40" value="16"></label><b id="aspRv" style="font-family:var(--mono)"></b></div>
+            <div id="bankChart"></div>
+          </div>
+          <div class="demo-foot"><span class="rd" id="bankStat"></span></div>
+        </div>
+
+        <div class="note tip">
+          <h4><span class="ic">💡</span>实用做法</h4>
+          <p>画时间序列时，别用默认尺寸直接截图。先把长宽比调到「主要波动大致呈 45°」，
+          再决定要不要双图并排（一张全景 + 一张局部放大）。</p>
+        </div>
+
+        <div class="donebox" data-sec="ch04-s4"></div>
+      </section>
+
+      <!-- ════════ 4.5 ════════ -->
+      <section class="sec rv" id="s5">
+        <h2><span class="n">4.5</span>等值线：把点云变成「地形」</h2>
+        <p class="sub">Marching Squares：在网格里逐格判断「穿没穿过阈值」。</p>
+
+        <p>
+          当散点太密、看不清密度分布时，可以把平面划分成网格、估计每个格点的密度，
+          再画出等值线（同一密度值的连线）——就像地图上的等高线。
+          <code>d3.contourDensity</code> 用的正是核密度估计 + Marching Squares。
+        </p>
+
+        <div class="demo">
+          <div class="demo-head">
+            <span class="dt">演示 · 企鹅二维密度等值线</span>
+            <span class="dsub">拖动带宽，控制平滑程度</span>
+          </div>
+          <div class="demo-body">
+            <div class="ctl"><label>带宽（越小平滑越少） <input type="range" id="densBW" min="4" max="30" value="14"></label><b id="densBWv" style="font-family:var(--mono)"></b></div>
+            <div id="densChart"></div>
+          </div>
+          <div class="demo-foot"><span class="rd" id="densStat"></span></div>
+        </div>
+
+        <div class="note key">
+          <h4><span class="ic">⭐</span>关键点：带宽是「分辨率旋钮」</h4>
+          <p>带宽小 → 等值线贴着点走，反映细节但噪声多；带宽大 → 平滑掉细节，只剩宏观结构。
+          没有唯一正确的带宽，要根据「你想让读者看到哪一层结构」来选。</p>
+        </div>
+
+        <div class="donebox" data-sec="ch04-s5"></div>
+      </section>
+
+      <div style="padding:10px 0 40px;display:flex;gap:12px;flex-wrap:wrap">
+        <a class="btn ghost" href="ch03.html">← 上一展厅：色彩</a>
+        <a class="btn" href="ch05.html">下一展厅：时序数据 →</a>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<script src="assets/js/d3.v7.min.js"></script>
+<script src="assets/js/common.js"></script>
+<script src="assets/js/refs.js"></script>
+<script src="assets/js/ch04.js"></script>
+</body>
+</html>
