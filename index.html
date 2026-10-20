@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>图学馆 · 《可视化导论》交互讲义</title>
+<meta name="description" content="《可视化导论》交互讲义：五间展厅 + 可视化实验室，用真实数据讲清可视化的原理、色彩与实践。">
+<link rel="stylesheet" href="assets/css/gallery.css">
+</head>
+<body>
+
+<!-- ══════════ 门厅 ══════════ -->
+<header class="hero">
+  <canvas id="heroCanvas"></canvas>
+  <div class="hero-inner">
+    <p class="eyebrow">Interactive Coursebook · Introduction to Visualization</p>
+    <h1>图 学 馆</h1>
+    <p class="sub">《可视化导论》交互讲义 · 五间展厅，一次看懂可视化</p>
+    <p class="desc">
+      这里不是图表的陈列柜，而是一间可以动手的教室。
+      每个概念都配一个<strong>能改参数、能看结果</strong>的交互演示，
+      所有数据都是真实公开数据集，每一处结论都标注了出处。
+    </p>
+    <div class="hero-cta">
+      <a class="btn gold" href="#halls">进入展厅</a>
+      <a class="btn ghost" href="lab.html">直接去实验室</a>
+    </div>
+    <div class="hero-stats">
+      <div class="hero-stat"><b>5</b><span>间展厅</span></div>
+      <div class="hero-stat"><b>27</b><span>个知识小节</span></div>
+      <div class="hero-strip" style="display:none"></div>
+      <div class="hero-stat"><b>33</b><span>个可交互演示</span></div>
+      <div class="hero-stat"><b>7</b><span>套真实数据集</span></div>
+      <div class="hero-stat"><b>0</b><span>个视频 · 轻量离线可用</span></div>
+    </div>
+  </div>
+</header>
+
+<!-- ══════════ 展厅导览 ══════════ -->
+<section id="halls" class="section">
+  <div class="wrap">
+    <div class="section-head rv">
+      <p class="eyebrow">The Halls</p>
+      <h2><span class="num">导览</span>五间展厅</h2>
+      <p class="lead">
+        按顺序走完，就是一条完整的学习路径：先认识<strong>数据是什么</strong>，再理解<strong>图是怎么被造出来的</strong>，
+        然后攻克<strong>色彩</strong>这个最容易出错的环节，最后分别拿下<strong>低维数据</strong>与<strong>时序数据</strong>两类最常见的实战场景。
+      </p>
+    </div>
+    <div class="halls" id="hallGrid"><!-- JS 渲染 --></div>
+  </div>
+</section>
+
+<!-- ══════════ 学习路径 ══════════ -->
+<section class="section">
+  <div class="wrap">
+    <div class="section-head rv">
+      <p class="eyebrow">Learning Path</p>
+      <h2><span class="num">路线</span>建议的学习顺序</h2>
+      <p class="lead">每节读完可以点「标记学完」，进度会记在本地浏览器里，下次打开还在。</p>
+    </div>
+    <ol class="path rv">
+      <li><span class="dot">1</span>
+        <h4>数据的四种尺度 <span class="tag">第一展厅</span></h4>
+        <p>先问一句「这个字段到底是哪类数据」，后面所有图表选择都由它决定。定类、定序、定距、定比——弄错尺度，图就必然画错。</p>
+      </li>
+      <li><span class="dot">2</span>
+        <h4>从原始数据到屏幕像素 <span class="tag">第二展厅</span></h4>
+        <p>Card 数据流模型把「画图」拆成七个可检查的步骤。知道自己在哪一步，调试才有方向。</p>
+      </li>
+      <li><span class="dot">3</span>
+        <h4>色彩：可视化里最贵也最易错的一环 <span class="tag">第三展厅</span></h4>
+        <p>记住三条规则就够了：顺序型用顺序色阶，发散型必须有中点，分类型绝不能用深浅。再学会检查色盲友好性。</p>
+      </li>
+      <li><span class="dot">4</span>
+        <h4>低维数据：坐标变换与拟合 <span class="tag">第四展厅</span></h4>
+        <p>散点图画完之后还要做什么？换对数轴、加拟合线、把线 banking 到 45°——这三步决定图能否回答问题。</p>
+      </li>
+      <li><span class="dot">5</span>
+        <h4>时序数据：时间有五种属性 <span class="tag">第五展厅</span></h4>
+        <p>时间点、时间区间、顺序、周期、粒度。识别出「周期」，就该换日历热图或螺旋图了。</p>
+      </li>
+      <li><span class="dot">6</span>
+        <h4>实验室：把工具带走 <span class="tag cobalt">实验室</span></h4>
+        <p>学完之后，回到实验室。图表明鉴帮你「按数据类型查图表」，其余工具随时可以拿来验证自己的图。</p>
+      </li>
+    </ol>
+  </div>
+</section>
+
+<!-- ══════════ 数据来源 ══════════ -->
+<section class="section">
+  <div class="wrap">
+    <div class="section-head rv">
+      <p class="eyebrow">Datasets</p>
+      <h2><span class="num">数据</span>本站使用的全部数据</h2>
+      <p class="lead">全部为真实公开数据集，随站内置。不使用任何编造数据；教学需要标注为「合成」的部分会单独说明。</p>
+    </div>
+    <div class="dsrc rv">
+      <div class="d"><h5>newstudent.csv</h5><p>80 条新生记录（序号/姓名/性别/生日/年龄/班级/籍贯/民族）。课程原始素材，由 DeepSeek 合成，仅用于教学，不可作真实人口统计。</p></div>
+      <div class="d"><h5>crime.csv</h5><p>美国 50 州犯罪与人口数据（11 个字段）。课程原始素材，用于坐标变换与曲线拟合。</p></div>
+      <div class="d"><h5>penguins.csv</h5><p>Palmer 企鹅数据集，344 条观测（喙长/喙深/鳍长/体重，3 个物种）。用于散点图与分类编码。</p></div>
+      <div class="d"><h5>flights.csv</h5><p>1949–1960 年国际航线月度乘客数（144 个月），经典的时间序列（趋势 + 季节）。</p></div>
+      <div class="d"><h5>anscombe.csv</h5><p>Anscombe 四重奏，四组均值/方差/相关系数完全相同、图形截然不同的数据。用于说明「为什么必须画出来看」。</p></div>
+      <div class="d"><h5>iris.csv</h5><p>Fisher 鸢尾花数据集，150 条（4 个测量值 + 3 个物种）。</p></div>
+      <div class="d"><h5>tips.csv</h5><p>餐厅小费记录 244 条（账单/小费/性别/是否吸烟/星期/时段/人数）。</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ 关于 ══════════ -->
+<section class="section">
+  <div class="wrap">
+    <div class="section-head rv">
+      <p class="eyebrow">About</p>
+      <h2><span class="num">关于</span>这门课与这个站点</h2>
+    </div>
+    <div class="halls rv" style="grid-template-columns:repeat(auto-fill,minmax(270px,1fr))">
+      <div class="hall" style="cursor:default">
+        <div class="hall-body">
+          <div class="hall-no">课程</div>
+          <h3>《可视化导论》</h3>
+          <p>中国石油大学（华东）· 授课教师 李昕 · 参考教材 陈为《数据可视化》。本站为该课程门户的重构版交互讲义。</p>
+        </div>
+      </div>
+      <div class="hall" style="cursor:default">
+        <div class="hall-body">
+          <div class="hall-no">理论依据</div>
+          <h3>经典文献</h3>
+          <p>Mackinlay 1986（视觉通道排序）、Cleveland &amp; McGill 1984（图形感知）、Stevens 1946（测量尺度）、Card 1999（数据流模型）、Okabe &amp; Ito 2008（色盲友好配色）。</p>
+        </div>
+      </div>
+      <div class="hall" style="cursor:default">
+        <div class="hall-body">
+          <div class="hall-no">技术</div>
+          <h3>零依赖</h3>
+          <p>纯 HTML + CSS + ES Modules，D3.js v7 内置在本地。无后端、无追踪、无外部请求，离线也能完整运行。</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script src="assets/js/d3.v7.min.js"></script>
+<script src="assets/js/common.js"></script>
+<script src="assets/js/refs.js"></script>
+<script src="assets/js/home.js"></script>
+</body>
+</html>
