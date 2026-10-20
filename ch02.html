@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>第二展厅 · 可视化流程 | 图学馆</title>
+<link rel="stylesheet" href="assets/css/gallery.css">
+</head>
+<body>
+
+<header class="hall-head">
+  <div class="wrap">
+    <p class="eyebrow">Hall 02 · Process</p>
+    <h1>第 二 展 厅 · 可 视 化 流 程</h1>
+    <p class="en">How does a table of numbers become a picture on screen?</p>
+    <p class="lead">
+      「画图」不是一步，而是一条<strong>流水线</strong>。Card 数据流模型把它拆成若干可检查的步骤；
+      之后我们用新生数据亲手走一遍：分组聚合 → 树布局 → 渲染成列表。
+    </p>
+    <div class="kicker">
+      <span class="tag">Card 数据流模型 1999</span>
+      <span class="tag cobalt">d3.rollup</span>
+      <span class="tag jade">Reingold-Tilford 树布局</span>
+      <span class="tag jade">事件委托</span>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="layout">
+
+    <aside class="toc">
+      <h4>本厅目录</h4>
+      <ol>
+        <li><a href="#s1">2.1 数据流模型</a></li>
+        <li><a href="#s2">2.2 数据分类树</a></li>
+        <li><a href="#s3">2.3 树布局算法</a></li>
+        <li><a href="#s4">2.4 树形列表渲染</a></li>
+      </ol>
+      <div class="toc-note">
+        本厅把 80 名新生按「班级 → 性别」聚合成一棵树，
+        再分别用<strong>节点链接图</strong>和<strong>缩进列表</strong>两种形式渲染。
+      </div>
+    </aside>
+
+    <main>
+
+      <!-- ════════ 2.1 ════════ -->
+      <section class="sec rv" id="s1">
+        <h2><span class="n">2.1</span>Card 数据流模型</h2>
+        <p class="sub">Stuart Card 1999：可视化是从「值」到「视图」再到「人脑」的变换链。</p>
+
+        <p>
+          理解这条链的最大好处是<strong>调试有方向</strong>。当图不对时，你能判断问题出在哪一步：
+          是数据读错了，还是映射错了，还是渲染错了。
+        </p>
+
+        <div class="demo">
+          <div class="demo-head">
+            <span class="dt">演示 · 数据流模型（可点击）</span>
+            <span class="dsub">点任一方框看该阶段的职责与常见错误</span>
+          </div>
+          <div class="demo-body">
+            <div id="cardSvg"></div>
+            <div class="term" id="cardInfo" style="margin-top:14px"></div>
+          </div>
+          <div class="demo-foot">
+            <span>Card, Mackinlay &amp; Shneiderman (1999), <i>Readings in Information Visualization</i>, "Data State Model".</span>
+          </div>
+        </div>
+
+        <h3>为什么用这条模型思考问题</h3>
+        <p>
+          新手最常犯的错误是把所有问题都当成「渲染问题」——颜色不对就调颜色。
+          但多数时候问题出在更上游：<strong>聚合粒度不对</strong>（数据表错了）、
+          <strong>视觉通道选错了</strong>（可视化抽象错了）。先定位阶段，再动手。
+        </p>
+
+        <div class="note key">
+          <h4><span class="ic">⭐</span>关键点：每一步都是「有损压缩」</h4>
+          <p>从值到视图，每一步都在丢弃信息换取可读性。聚合丢弃个体、映射丢弃未编码的字段、渲染丢弃被遮挡的细节。<strong>可视化设计的本质，是决定「丢掉什么」</strong>。判断标准是：丢掉的是否正好是读者不需要的？</p>
+        </div>
+
+        <div class="donebox" data-sec="ch02-s1"></div>
+      </section>
+
+      <!-- ════════ 2.2 ════════ -->
+      <section class="sec rv" id="s2">
+        <h2><span class="n">2.2</span>数据分类树：d3.rollup 多层聚合</h2>
+        <p class="sub">把扁平表格，折叠成一棵树。</p>
+
+        <p>
+          <code>d3.rollup</code> 可以把数组按任意多层键聚合成嵌套的 <code>Map</code>。
+          对新生数据，我们想按「班级 → 性别」两层聚合人数，这正是树形结构。
+        </p>
+
+        <div class="demo">
+          <div class="demo-head">
+            <span class="dt">演示 · rollup 折叠过程</span>
+            <span class="dsub">选择层级深度，看 Map 如何嵌套</span>
+          </div>
+          <div class="demo-body">
+            <div class="ctl">
+              <span style="font-size:13px">聚合层级：</span>
+              <button class="chip on" data-d="1">1 层（按班级）</button>
+              <button class="chip" data-d="2">2 层（班级→性别）</button>
+              <button class="chip" data-d="3">3 层（班级→性别→年龄）</button>
+            </div>
+            <div class="pair">
+              <div class="side"><h5>嵌套 Map 结构</h5><pre id="rollOut" style="font-family:var(--mono);font-size:12px;line-height:1.8;white-space:pre-wrap;margin:0;max-height:280px;overflow:auto"></pre></div>
+              <div class="side"><h5>对应的树形草图</h5><div id="rollSketch"></div></div>
+            </div>
+          </div>
+          <div class="demo-foot"><span class="rd" id="rollStat"></span></div>
+        </div>
+
+        <div class="codebox">
+          <div class="cb-head"><span>关键代码 · 三层 rollup</span></div>
+          <pre><code>// 按「班级 → 性别 → 年龄」三层聚合，叶子是人数
+const tree = d3.rollup(
+  students,
+  v => v.length,                       // 聚合函数：数人数
+  d => d.class,                        // 第 1 层键
+  d => d.gender,                       // 第 2 层键
+  d => d.age                           // 第 3 层键
+);
+
+// 展开成 d3.hierarchy 能识别的 {name, children} 结构
+function mapToNode(map, name) {
+  return {
+    name,
+    children: [...map.entries()].map(([k, v]) =>
+      v instanceof Map ? mapToNode(v, String(k)) : { name: String(k), value: v })
+  };
+}</code></pre>
+        </div>
+
+        <div class="note tip">
+          <h4><span class="ic">💡</span>group 与 rollup 的分工</h4>
+          <p><code>d3.group</code> 只分堆不聚合（叶子仍是记录数组），适合下一步要保留原始记录的场景；<code>d3.rollup</code> 直接给出聚合值。做树图、旭日图通常用 rollup + <code>d3.hierarchy</code>。</p>
+        </div>
+
+        <div class="donebox" data-sec="ch02-s2"></div>
+      </section>
+
+      <!-- ════════ 2.3 ════════ -->
+      <section class="sec rv" id="s3">
+        <h2><span class="n">2.3</span>树布局：Reingold-Tilford 算法</h2>
+        <p class="sub">经典规则：兄弟节点尽量靠拢，父节点居中于子节点。</p>
+
+        <p>
+          Reingold &amp; Tilford (1981) 给出了"画好一棵树"的四条美学规则：
+          ① 同层节点在同一水平线；② 兄弟节点从左到右排布且尽量紧凑；
+          ③ 父节点水平居中于其所有子节点；④ 子树无论出现在哪里，形状都相同。
+          <code>d3.tree()</code> 实现了这套规则。
+        </p>
+
+        <div class="demo">
+          <div class="demo-head">
+            <span class="dt">演示 · 新生数据分类树</span>
+            <span class="dsub">悬停节点看路径与人数 · 可切换布局方向</span>
+            <span class="spacer"></span>
+            <button class="btn-sm" id="treeDir">切换为水平</button>
+          </div>
+          <div class="demo-body"><div id="treeSvg" class="canvas-wrap"></div></div>
+          <div class="demo-foot"><span class="rd" id="treeStat"></span></div>
+        </div>
+
+        <div class="codebox">
+          <div class="cb-head"><span>关键代码 · 三步画树</span></div>
+          <pre><code>const root = d3.hierarchy(mapToNode(tree, "全部新生"))
+  .sum(d => d.value)          // 让每个节点带上「子树总人数」
+  .sort((a, b) => b.value - a.value);
+
+d3.tree().size([width, height])(root);   // 布局：算出每个节点的 x, y
+
+// 画连线（links）与节点（nodes）
+svg.selectAll(".link").data(root.links()).join("path")
+  .attr("d", d3.linkVertical().x(d => d.x).y(d => d.y));
+
+svg.selectAll(".node").data(root.descendants()).join("circle")
+  .attr("cx", d => d.x).attr("cy", d => d.y).attr("r", 5);</code></pre>
+        </div>
+
+        <div class="note key">
+          <h4><span class="ic">⭐</span>关键点：布局与渲染分离</h4>
+          <p><code>d3.tree()</code> 只做一件事——算出每个节点的坐标；它<strong>不画任何东西</strong>。把「布局」和「渲染」分开，意味着同一棵树可以用节点链接、旭日图、缩进列表等不同方式呈现。这正是本章的精髓。</p>
+        </div>
+
+        <div class="donebox" data-sec="ch02-s3"></div>
+      </section>
+
+      <!-- ════════ 2.4 ════════ -->
+      <section class="sec rv" id="s4">
+        <h2><span class="n">2.4</span>树形列表渲染：classed + 事件委托</h2>
+        <p class="sub">同一棵树，换成缩进列表；只用一个监听器处理全部点击。</p>
+
+        <p>
+          树不一定要画成图。缩进列表（outline）也是一种树可视化，而且更适合精确读取数值。
+          这里的关键技术是<strong>事件委托</strong>：不在每个节点上绑监听器，
+          而是只在根容器绑一个，通过 <code>event.target</code> 判断点了谁。
+        </p>
+
+        <div class="demo">
+          <div class="demo-head">
+            <span class="dt">演示 · 可折叠树形列表</span>
+            <span class="dsub">点 ▶ 折叠 / 展开 · 点行选中</span>
+            <span class="spacer"></span>
+            <button class="btn-sm" id="treeExpand">全部展开</button>
+            <button class="btn-sm" id="treeCollapse">全部收起</button>
+          </div>
+          <div class="demo-body"><div id="treeList"></div></div>
+          <div class="demo-foot"><span class="rd" id="listStat">当前选中：无 · 监听器数量：1（事件委托）</span></div>
+        </div>
+
+        <div class="codebox">
+          <div class="cb-head"><span>关键代码 · 一个监听器管全部</span></div>
+          <pre><code>container.addEventListener("click", e => {
+  const toggle = e.target.closest(".toggle");   // 点了箭头？
+  const row = e.target.closest(".row");         // 还是点了行？
+  if (toggle) { toggleNode(toggle.dataset.path); return; }
+  if (row) { selectNode(row.dataset.path); }
+});
+
+// classed()：把「状态」变成 class，样式交给 CSS
+li.classed("open", d => d.open)
+  .classed("leaf", d => !d.children);</code></pre>
+        </div>
+
+        <div class="note warn">
+          <h4><span class="ic">⚠</span>坑：重复绑定监听器</h4>
+          <p>如果每次渲染都 <code>addEventListener</code>，树展开几次就会触发重复回调。事件委托把监听器固定在<strong>不会重建的容器</strong>上，内部节点随意增删都不会出问题。</p>
+        </div>
+
+        <div class="note tip">
+          <h4><span class="ic">💡</span>节点链接图 vs 缩进列表</h4>
+          <p>看<strong>结构形状</strong>（哪层宽、哪里不平衡）用节点链接图；看<strong>精确数值与导航</strong>用缩进列表。两者底层是同一棵 hierarchy——这就是「布局与渲染分离」的价值。</p>
+        </div>
+
+        <div class="donebox" data-sec="ch02-s4"></div>
+      </section>
+
+      <div style="padding:10px 0 40px;display:flex;gap:12px;flex-wrap:wrap">
+        <a class="btn ghost" href="ch01.html">← 上一展厅：数据</a>
+        <a class="btn" href="ch03.html">下一展厅：色彩 →</a>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<script src="assets/js/d3.v7.min.js"></script>
+<script src="assets/js/common.js"></script>
+<script src="assets/js/refs.js"></script>
+<script src="assets/js/ch02.js"></script>
+</body>
+</html>
