@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>第一展厅 · 数据 | 图学馆</title>
+<link rel="stylesheet" href="assets/css/gallery.css">
+</head>
+<body>
+
+<header class="hall-head">
+  <div class="wrap">
+    <p class="eyebrow">Hall 01 · Data</p>
+    <h1>第 一 展 厅 · 数 据</h1>
+    <p class="en">What exactly is the thing you are plotting?</p>
+    <p class="lead">
+      在画第一张图之前，先回答一个问题：<strong>你手里的数据，到底是什么？</strong>
+      是能排序的，还是只能分类的？这里的每一个判断，都会决定后面能画什么图、不能画什么图。
+    </p>
+    <div class="kicker">
+      <span class="tag">Stevens 四尺度</span>
+      <span class="tag">DIKW</span>
+      <span class="tag cobalt">d3-array 变换</span>
+      <span class="tag cobalt">Data-Join 三态</span>
+      <span class="tag jade">真实数据：80 名新生</span>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="layout">
+
+    <aside class="toc">
+      <h4>本厅目录</h4>
+      <ol>
+        <li><a href="#s1">1.1 数据从哪来</a></li>
+        <li><a href="#s2">1.2 数据的定义</a></li>
+        <li><a href="#s3">1.3 数据属性：四尺度</a></li>
+        <li><a href="#s4">1.4 数据变换</a></li>
+        <li><a href="#s5">1.5 D3 数据选择器</a></li>
+      </ol>
+      <div class="toc-note">
+        本厅全部示例使用 <code>data/newstudent.csv</code>（80 条）。
+        该数据由 DeepSeek 合成，仅用于教学演示，<strong>不能用于真实人口统计</strong>。
+      </div>
+    </aside>
+
+    <main>
+
+      <!-- ════════ 1.1 ════════ -->
+      <section class="sec rv" id="s1">
+        <h2><span class="n">1.1</span>数据从哪来：加载与字段映射</h2>
+        <p class="sub">CSV 是字符串；JS 需要对象。中间这一步叫「行转换」。</p>
+
+        <p>
+          CSV 文件里所有东西都是<strong>文本</strong>。<code>"18"</code> 是字符串不是数字，
+          <code>"2007-08-15"</code> 是字符串不是日期。如果直接拿去算，
+          <code>"18" + "2"</code> 会得到 <code>"182"</code>。所以加载时必须做类型转换。
+        </p>
+
+        <div class="demo">
+          <div class="demo-head">
+            <span class="dt">演示 · CSV 原始行 → JS 对象</span>
+            <span class="dsub">点任意一行，看它被转换成什么</span>
+          </div>
+          <div class="demo-body">
+            <div class="ctl">
+              <label>选择记录：<select id="rowSel"></select></label>
+              <span class="sep"></span>
+              <button class="btn-sm" id="rowRand">随机换一条</button>
+            </div>
+            <div class="pair">
+              <div class="side">
+                <h5>① CSV 原始文本（一切都是字符串）</h5>
+                <pre id="rawOut" style="font-family:var(--mono);font-size:12px;background:var(--paper-2);padding:10px;border-radius:3px;white-space:pre-wrap;line-height:1.7;margin:0"></pre>
+              </div>
+              <div class="side">
+                <h5>② 转换后的 JS 对象（类型正确）</h5>
+                <pre id="objOut" style="font-family:var(--mono);font-size:12px;background:var(--paper-2);padding:10px;border-radius:3px;white-space:pre-wrap;line-height:1.7;margin:0"></pre>
+              </div>
+            </div>
+          </div>
+          <div class="demo-foot">
+            <span class="rd" id="typeNote"></span>
+          </div>
+        </div>
+
+        <h3>三个必须记住的坑</h3>
+        <div class="note warn">
+          <h4><span class="ic">⚠</span>坑一：中文 key</h4>
+          <p>CSV 用中文列名给人看没问题，但 JS 对象里不要直接用中文 key。老浏览器对中文标识符容错差，JSON / URL 编码也可能乱码，IDE 的补全与重构支持也不一致。做法是<strong>建立一张映射表</strong>。</p>
+        </div>
+        <div class="note warn">
+          <h4><span class="ic">⚠</span>坑二：忘了 trim()</h4>
+          <p><code>"软件工程1班 "</code> 末尾那个空格，会让后续的分组、过滤全部失效——而且极难发现。所有字符串字段都应该 <code>.trim()</code>。</p>
+        </div>
+        <div class="note warn">
+          <h4><span class="ic">⚠</span>坑三：new Date() 的兼容差异</h4>
+          <p><code>new Date("2007-08-15")</code> 能解析 ISO 格式，但对 <code>"2007/8/15"</code> 表现不一致。稳妥写法是 <code>d3.timeParse("%Y-%m-%d")</code>，解析失败会返回 <code>null</code>，便于显式排查。</p>
+        </div>
+
+        <div class="codebox">
+          <div class="cb-head"><span>关键代码 · 一行完成加载 + 转换</span></div>
+          <pre><code>const COLUMN_MAP = { "序号":"id", "姓名":"name", "性别":"gender",
+                    "生日":"birthday", "年龄":"age", "班级":"class",
+                    "籍贯":"hometown", "民族":"ethnic" };
+
+const parseDate = d3.timeParse("%Y-%m-%d");
+
+function transformRow(d) {
+  return {
+    id:       +d["序号"],              // 一元 + 把字符串转数字
+    name:     d["姓名"].trim(),          // trim() 去掉首尾空白
+    birthday: parseDate(d["生日"]),      // 用 d3 解析，失败返回 null
+    age:      +d["年龄"],
+    class:    d["班级"].trim(),
+    hometown: d["籍贯"].trim(),
+    ethnic:   d["民族"].trim()
+  };
+}
+
+// d3.csv 的第二个参数直接传「行转换函数」，加载即转换
+const data = await d3.csv("data/newstudent.csv", transformRow);</code></pre>
+        </div>
+
+        <div class="note key">
+          <h4><span class="ic">⭐</span>关键点：为什么是 <code>d3.csv(path, row)</code></h4>
+          <p>把转换函数交给 <code>d3.csv</code>，加载和清洗就合成为一步，中间不会残留一份「脏数据」。相反，如果先 <code>await d3.csv(path)</code> 再 <code>.map()</code>，那么在中途出错时，你会同时持有两份不同状态的数据，调试成本翻倍。</p>
+        </div>
+
+        <div class="note tip">
+          <h4><span class="ic">💡</span>顺手做一次质量检查</h4>
+          <p>加载完成后立刻验证：<code>data.length</code> 是否符合预期、有无 <code>null</code> 日期、数值字段有无 <code>NaN</code>。这一步花十秒钟，能省下后面两小时。</p>
+        </div>
+
+        <div class="donebox" data-sec="ch01-s1"></div>
+      </section>
+
+      <!-- ════════ 1.2 ════════ -->
+      <section class="sec rv" id="s2">
+        <h2><span class="n">1.2</span>数据的定义：DIKW 金字塔</h2>
+        <p class="sub">Data → Information → Knowledge → Wisdom，每上一层都多了一种东西。</p>
+
+        <p>
+          这是 Russell Ackoff 在 1989 年提出的层级。区分它们的关键不在于「量」，
+          而在于<strong>加了什么</strong>：加上下文成为信息，加关系成为知识，加判断成为智慧。
+        </p>
+
+        <div class="demo">
+          <div class="demo-head">
+            <span class="dt">演示 · DIKW 金字塔</span>
+            <span class="dsub">点任一层，看它在新生数据里对应什么</span>
+          </div>
+          <div class="demo-body">
+            <div id="dikwSvg"></div>
+            <div class="term" id="dikwInfo" style="margin-top:14px"></div>
+          </div>
+          <div class="demo-foot">
+            <span>Ackoff, R. (1989), <i>"From Data to Wisdom"</i>, Journal of Applied Systems Analysis.</span>
+          </div>
+        </div>
+
+        <h3>对可视化的意义</h3>
+        <p>
+          可视化的工作边界，主要在 <strong>Information → Knowledge</strong> 这一段：
+          图把信息排布成能看出关系的形式，让人产出知识。
+          因此一张好图的标准不是「好看」，而是<strong>「是否让人更快地产出正确的知识」</strong>。
+        </p>
+
+        <div class="note key">
+          <h4><span class="ic">⭐</span>关键点：可视化不能越级</h4>
+          <p>数据是原材料，直接把 80 行表格丢给读者，读者要自己完成全部三层跃迁；而好图替读者完成了「信息 → 知识」这一步。判断一张图好不好，就问：<strong>它替读者省掉了哪一层？</strong></p>
+        </div>
+
+        <div class="note">
+          <h4><span class="ic">📌</span>顺带记住：数据质量四维度</h4>
+          <p>Wang &amp; Strong (1996) 提出数据质量的四个维度：<strong>准确性、完整性、一致性、时效性</strong>。使用任何数据前都应过一遍这四项——尤其是 AI 合成数据。</p>
+        </div>
+
+        <div class="donebox" data-sec="ch01-s2"></div>
+      </section>
+
+      <!-- ════════ 1.3 ════════ -->
+      <section class="sec rv" id="s3">
+        <h2><span class="n">1.3</span>数据属性：Stevens 四种测量尺度</h2>
+        <p class="sub">这是整门课最实用的一个判断：先定尺度，再选图。</p>
+
+        <p>
+          Stanley Stevens 在 1946 年提出四种测量尺度。它们的区别在于<strong>允许的运算</strong>逐级增多：
+          定类只能判等，定序能判大小，定距能算差值，定比能算倍数。
+          <strong>用了不该用的运算，结论就是错的</strong>——比如「20℃ 是 10℃ 的两倍热」这句话没有意义。
+        </p>
+
+        <div class="demo">
+          <div class="demo-head">
+            <span class="dt">演示 · 四尺度判定器</span>
+            <span class="dsub">选一种尺度，看它能做什么、不能做什么</span>
+          </div>
+          <div class="demo-body">
+            <div class="chips" id="scaleChips" style="margin-bottom:16px"></div>
+            <div id="scaleOut"></div>
+          </div>
+          <div class="demo-foot">
+            <span>Stevens, S. S. (1946), <i>"On the Theory of Scales of Measurement"</i>, Science 103(2684).</span>
+          </div>
+        </div>
+
+        <h3>练一练：这些字段分别是什么尺度？</h3>
+        <div class="demo">
+          <div class="demo-head">
+            <span class="dt">练习 · 判断真实字段的尺度</span>
+            <span class="dsub">全部取自本站内置的真实数据集</span>
+          </div>
+          <div class="demo-body" id="quizBox"></div>
+          <div class="demo-foot">
+            <span class="rd" id="quizScore">答对 0 / 6</span>
+            <span class="spacer"></span>
+            <button class="btn-sm" id="quizReset">重来</button>
+          </div>
+        </div>
+
+        <div class="note key">
+          <h4><span class="ic">⭐</span>关键点：尺度决定图形，而不是你决定图形</h4>
+          <ul>
+            <li><strong>定类</strong> → 只能用位置与色相区分，条形图按频数排序。</li>
+            <li><strong>定序</strong> → 顺序色阶（sequential），条形必须按等级排列，不能打乱。</li>
+            <li><strong>定距</strong> → 折线、直方图；有中点时用发散色阶（diverging）。</li>
+            <li><strong>定比</strong> → 全部可用，且可以使用对数轴（因为有绝对零点）。</li>
+          </ul>
+        </div>
+
+        <div class="note warn">
+          <h4><span class="ic">⚠</span>最常见的错误：给「定类」用「顺序色阶」</h4>
+          <p>用同一蓝色的深浅表示「山东 / 江苏 / 四川」，读者会本能地认为三者有先后。类别之间没有顺序，就<strong>必须用色相区分</strong>，不能用深浅。</p>
+        </div>
+
+        <div class="donebox" data-sec="ch01-s3"></div>
+      </section>
+
+      <!-- ════════ 1.4 ════════ -->
+      <section class="sec rv" id="s4">
+        <h2><span class="n">1.4</span>数据变换：把原始表变成可画的形状</h2>
+        <p class="sub">d3-array 的八个函数，覆盖 90% 的整形需求。</p>
+
+        <p>
+          原始数据很少能直接画。你需要筛选、派生、排序、分组、分箱。
+          <code>d3-array</code> 把这些操作做成纯函数，可以<strong>串联成一条流水线</strong>——
+          每一步的输出都是下一步的输入，任何一步都能单独检查。
+        </p>
+
+        <div class="demo">
+          <div class="demo-head">
+            <span class="dt">演示 · 变换流水线</span>
+            <span class="dsub">勾选要执行的步骤，实时看中间结果</span>
+          </div>
+          <div class="demo-body">
+            <div class="ctl" id="pipeCtl" style="gap:8px"></div>
+            <div id="pipeFlow" style="margin:6px 0 14px"></div>
+            <div class="tbl-wrap" style="max-height:300px;overflow-y:auto"><table id="pipeTable"></table></div>
+          </div>
+          <div class="demo-foot">
+            <span class="rd" id="pipeStat"></span>
+          </div>
+        </div>
+
+        <div class="codebox">
+          <div class="cb-head"><span>d3-array 常用变换</span></div>
+          <pre><code>// 筛选
+data.filter(d => d.age >= 18)
+
+// 派生新字段（map 会返回新数组，不改动原数组）
+data.map(d => ({ ...d, birthYear: d.birthday.getFullYear() }))
+
+// 排序（注意：sort 会原地修改，应先 [...data] 复制）
+[...data].sort((a, b) => d3.ascending(a.age, b.age))
+
+// 分组统计：rollup 返回 Map
+d3.rollup(data, v => v.length, d => d.class)      // 单层：班级 → 人数
+d3.rollup(data, v => v.length, d => d.class, d => d.gender) // 多层嵌套
+
+// 求极值 / 分箱 / 累积
+d3.extent(data, d => d.age)                       // [min, max]
+d3.bin().value(d => d.age).thresholds(6)(data)    // 直方图分箱
+d3.group(data, d => d.hometown)                   // 分组但不聚合</code></pre>
+        </div>
+
+        <div class="note warn">
+          <h4><span class="ic">⚠</span>坑：sort() 会原地修改数组</h4>
+          <p><code>Array.prototype.sort</code> 直接改动原数组。如果你在多个视图里共用同一份数据，一处排序会静默地改变另一处的顺序。始终写成 <code>[...data].sort(...)</code>。</p>
+        </div>
+
+        <div class="note tip">
+          <h4><span class="ic">💡</span>rollup 还是 group？</h4>
+          <p>需要<strong>聚合出数值</strong>（人数、均值、求和）用 <code>d3.rollup</code>，返回 <code>Map(key → 聚合值)</code>；
+          只需要<strong>把记录分堆</strong>用 <code>d3.group</code>，返回 <code>Map(key → 记录数组)</code>。</p>
+        </div>
+
+        <div class="donebox" data-sec="ch01-s4"></div>
+      </section>
+
+      <!-- ════════ 1.5 ════════ -->
+      <section class="sec rv" id="s5">
+        <h2><span class="n">1.5</span>D3 数据选择器：Data-Join 的三种状态</h2>
+        <p class="sub">enter / update / exit —— 理解了它，就理解了 D3。</p>
+
+        <p>
+          D3 最核心的思想是 <strong>Data-Join</strong>：把数据数组和 DOM 元素数组做一次对齐。
+          对齐结果必然是三种状态之一：
+        </p>
+        <ul>
+          <li><strong>update</strong> — 数据有、元素也有（需要更新属性）</li>
+          <li><strong>enter</strong> — 数据有、元素没有（需要新建元素）</li>
+          <li><strong>exit</strong> — 元素有、数据没了（需要删除元素）</li>
+        </ul>
+
+        <div class="demo">
+          <div class="demo-head">
+            <span class="dt">演示 · 三态可视化</span>
+            <span class="dsub">切换数据集，看哪些柱子进入、更新、退出</span>
+            <span class="spacer"></span>
+            <button class="btn-sm" id="joinShuffle">换一批</button>
+          </div>
+          <div class="demo-body">
+            <div class="ctl">
+              <span class="tag jade" style="background:#e6efeb">■ enter 新增</span>
+              <span class="tag cobalt" style="background:#e8eef8">■ update 更新</span>
+              <span class="tag seal" style="background:#f5e6e2">■ exit 移除</span>
+              <span class="sep"></span>
+              <label><input type="checkbox" id="joinSlow" checked> 慢动作（看清过程）</label>
+            </div>
+            <div id="joinSvg"></div>
+          </div>
+          <div class="demo-foot">
+            <span class="rd" id="joinStat"></span>
+          </div>
+        </div>
+
+        <div class="codebox">
+          <div class="cb-head"><span>关键代码 · 三态的标准写法</span></div>
+          <pre><code>// key 函数：告诉 D3 "这条数据对应哪个元素"
+const bars = svg.selectAll("rect").data(data, d => d.key);
+
+bars.exit()
+    .transition().duration(600)
+    .attr("height", 0).attr("y", y0)
+    .remove();                                   // ① 先退场
+
+bars.enter().append("rect")                      // ② 再进场
+    .attr("x", d => x(d.key))
+    .attr("y", y0).attr("height", 0)
+    .attr("fill", "#1e3a6b")
+  .merge(bars)                                   // ③ 合并后统一更新
+    .transition().duration(600)
+    .attr("x", d => x(d.key))
+    .attr("y", d => y(d.value))
+    .attr("height", d => y0 - y(d.value));</code></pre>
+        </div>
+
+        <div class="note key">
+          <h4><span class="ic">⭐</span>关键点：必须提供 key 函数</h4>
+          <p>不传 key 函数时，D3 默认按<strong>下标</strong>匹配。数据集一变顺序，所有元素都会被当成「update」而不是 enter/exit，动画就会错乱——同一种颜色会莫名其妙地跳到另一个柱子上。提供了 key 函数（如 <code>d =&gt; d.key</code>），D3 才能正确识别「谁是新来的、谁走了」。</p>
+        </div>
+
+        <div class="note warn">
+          <h4><span class="ic">⚠</span>坑：过渡动画与数据更新不同步</h4>
+          <p><code>transition()</code> 是异步的。如果在动画未完成时再次更新数据，会产生交错的中间状态。解决办法是给过渡命名（<code>.transition("bar")</code>），或在更新前调用 <code>selection.interrupt()</code>。</p>
+        </div>
+
+        <div class="donebox" data-sec="ch01-s5"></div>
+      </section>
+
+      <div style="padding:10px 0 40px;display:flex;gap:12px;flex-wrap:wrap">
+        <a class="btn ghost" href="index.html">← 回到门厅</a>
+        <a class="btn" href="ch02.html">下一展厅：可视化流程 →</a>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<script src="assets/js/d3.v7.min.js"></script>
+<script src="assets/js/common.js"></script>
+<script src="assets/js/refs.js"></script>
+<script src="assets/js/ch01.js"></script>
+</body>
+</html>
