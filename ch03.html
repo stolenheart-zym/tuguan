@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>第三展厅 · 色彩 | 图学馆</title>
+<link rel="stylesheet" href="assets/css/gallery.css">
+</head>
+<body>
+
+<header class="hall-head">
+  <div class="wrap">
+    <p class="eyebrow">Hall 03 · Color</p>
+    <h1>第 三 展 厅 · 色 彩</h1>
+    <p class="en">Color is the most powerful — and most misused — channel.</p>
+    <p class="lead">
+      色彩是最强也最容易出错的视觉通道。本厅抓住三条铁律：
+      <strong>顺序型数据用顺序色阶，发散型数据必须有中点，分类型数据绝不能用深浅。</strong>
+      再学会一件事：用色盲模拟检查自己的图。
+    </p>
+    <div class="kicker">
+      <span class="tag">RGB / HSL / CIE Lab</span>
+      <span class="tag">三类 colormap</span>
+      <span class="tag cobalt">CIE Lab 色域</span>
+      <span class="tag jade">Okabe-Ito / Tol 配色</span>
+      <span class="tag seal">CVD 色盲模拟</span>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="layout">
+
+    <aside class="toc">
+      <h4>本厅目录</h4>
+      <ol>
+        <li><a href="#s1">3.1 颜色模型</a></li>
+        <li><a href="#s2">3.2 colormap 三类</a></li>
+        <li><a href="#s3">3.3 CIE Lab 色域</a></li>
+        <li><a href="#s4">3.4 色系搭配</a></li>
+        <li><a href="#s5">3.5 经典科研配色</a></li>
+        <li><a href="#s6">3.6 对错案例</a></li>
+        <li><a href="#s7">3.7 低饱和配色</a></li>
+        <li><a href="#s8">3.8 色盲模拟</a></li>
+      </ol>
+      <div class="toc-note">
+        本厅所有配色均取自公开发表的方案（Okabe-Ito 2008、Paul Tol、Tableau、D3），
+        色盲模拟使用 Machado et al. (2009) 的生理模型矩阵。
+      </div>
+    </aside>
+
+    <main>
+
+      <!-- ════════ 3.1 ════════ -->
+      <section class="sec rv" id="s1">
+        <h2><span class="n">3.1</span>颜色模型：同一种颜色的三种说法</h2>
+        <p class="sub">RGB 面向机器，HSL 面向人，CIE Lab 面向「感知」。三者互为坐标系。</p>
+
+        <p>
+          <strong>RGB</strong> 是显示器的物理模型（红绿蓝叠加），对人反直觉；
+          <strong>HSL</strong> 把颜色拆成色相 / 饱和度 / 亮度，符合人的语言习惯；
+          <strong>CIE Lab</strong> 则按「感知均匀」设计——同样的数值差，看起来就是同样的颜色差。
+          做可视化时，选 colormap 要看 Lab，跟人沟通要用 HSL。
+        </p>
+
+        <div class="demo">
+          <div class="demo-head">
+            <span class="dt">演示 · 颜色坐标系互转</span>
+            <span class="dsub">拖动滑块，同时看 RGB / HSL / CIE Lab 三个坐标</span>
+          </div>
+          <div class="demo-body">
+            <div style="display:grid;grid-template-columns:200px 1fr;gap:22px;align-items:start" class="cmodel">
+              <div>
+                <div id="cmSwatch" style="width:200px;height:120px;border-radius:4px;border:1px solid var(--line-2)"></div>
+                <div id="cmHue" style="margin-top:12px"></div>
+              </div>
+              <div>
+                <div class="ctl"><label>色相 H <input type="range" id="cmH" min="0" max="360" value="212"></label><b id="cmHv" style="font-family:var(--mono)"></b></div>
+                <div class="ctl"><label>饱和 S <input type="range" id="cmS" min="0" max="100" value="55"></label><b id="cmSv" style="font-family:var(--mono)"></b></div>
+                <div class="ctl"><label>亮度 L <input type="range" id="cmL" min="0" max="100" value="52"></label><b id="cmLv" style="font-family:var(--mono)"></b></div>
+                <div class="readout" id="cmOut" style="margin-top:6px"></div>
+              </div>
+            </div>
+          </div>
+          <div class="demo-foot"><span>注意 Lab 的 L* 与 HSL 的 L 不是一回事：Lab 的 L* 是感知亮度，50% 的灰在任何 Lab 里都恰好是 50。</span></div>
+        </div>
+
+        <div class="note key">
+          <h4><span class="ic">⭐</span>关键点：不要用 RGB 做渐变插值</h4>
+          <p>两个颜色在 RGB 空间线性插值，中间会经过「脏灰色」（比如红→绿会穿过暗棕色）。
+          正确做法是在 <strong>CIELab</strong> 或 <strong>HCL</strong> 空间插值（<code>d3.interpolateLab</code>），中间过渡才均匀干净。</p>
+        </div>
+
+        <div class="donebox" data-sec="ch03-s1"></div>
+      </section>
+
+      <!-- ════════ 3.2 ════════ -->
+      <section class="sec rv" id="s2">
+        <h2><span class="n">3.2</span>colormap 三类：选错类别 = 制造假象</h2>
+        <p class="sub">顺序、发散、分类——三种数据结构对应三种色阶，不能混用。</p>
+
+        <div class="demo">
+          <div class="demo-head">
+            <span class="dt">演示 · 三类 colormap 画廊</span>
+            <span class="dsub">全部为 D3 内置的真实配色方案</span>
+          </div>
+          <div class="demo-body" id="cmapGallery"></div>
+        </div>
+
+        <h3>练一练：场景 → colormap 类别</h3>
+        <div class="demo">
+          <div class="demo-head"><span class="dt">练习 · 配对判断</span></div>
+          <div class="demo-body" id="cmapQuiz"></div>
+          <div class="demo-foot"><span class="rd" id="cmapScore">答对 0 / 4</span></div>
+        </div>
+
+        <div class="note warn">
+          <h4><span class="ic">⚠</span>最臭名昭著的错误：彩虹色 jet</h4>
+          <p>jet（蓝→绿→黄→红）的亮度<strong>不是单调的</strong>：绿色最亮，蓝和红都暗。
+          数据里并不存在的「边界」会在亮度突变处凭空出现，医学上曾因此误诊。<strong>任何连续数据都不要用彩虹色。</strong></p>
+        </div>
+
+        <div class="donebox" data-sec="ch03-s2"></div>
+      </section>
+
+      <!-- ════════ 3.3 ════════ -->
+      <section class="sec rv" id="s3">
+        <h2><span class="n">3.3</span>CIE Lab 色域：屏幕能显示的颜色只是一小块</h2>
+        <p class="sub">a*b* 平面切片——sRGB 色域的真实形状。</p>
+
+        <p>
+          人眼可见的颜色范围远大于屏幕能显示的。下面的图把 sRGB 能显示的颜色
+          在 CIE Lab 的 <strong>a*–b* 平面</strong>上画出来：横轴 a*（绿↔红），纵轴 b*（蓝↔黄）。
+          拖动 L* 滑块，看不同亮度下色域的「切片」。
+        </p>
+
+        <div class="demo">
+          <div class="demo-head">
+            <span class="dt">演示 · sRGB 在 Lab 空间的色域切片</span>
+            <span class="dsub">拖动 L* 看截面如何变化 · 用真实 RGB 采样计算</span>
+          </div>
+          <div class="demo-body">
+            <div class="ctl"><label>亮度 L* <input type="range" id="gamL" min="10" max="95" value="65"></label><b id="gamLv" style="font-family:var(--mono)"></b></div>
+            <div id="gamutSvg"></div>
+          </div>
+          <div class="demo-foot"><span class="rd" id="gamStat"></span></div>
+        </div>
+
+        <div class="note key">
+          <h4><span class="ic">⭐</span>关键点：感知均匀</h4>
+          <p>Lab 的价值在于「数值差 ≈ 视觉差」。所以做顺序色阶时，应当让颜色在 Lab 空间<strong>沿直线匀速推进</strong>——
+          Viridis 正是这么设计的，这也是它替代 jet 的根本原因。</p>
+        </div>
+
+        <div class="donebox" data-sec="ch03-s3"></div>
+      </section>
+
+      <!-- ════════ 3.4 ════════ -->
+      <section class="sec rv" id="s4">
+        <h2><span class="n">3.4</span>色系搭配：色相环上的五种几何</h2>
+        <p class="sub">和谐配色不是玄学，是色相环上的几何关系。</p>
+
+        <div class="demo">
+          <div class="demo-head">
+            <span class="dt">演示 · 色相环与五种配色法</span>
+            <span class="dsub">拖动主色 · 切换配色方案</span>
+          </div>
+          <div class="demo-body">
+            <div class="ctl" id="harmChips"></div>
+            <div style="display:grid;grid-template-columns:260px 1fr;gap:24px;align-items:center" class="cmodel">
+              <div id="wheelSvg"></div>
+              <div>
+                <div class="ctl"><label>主色 H <input type="range" id="harmH" min="0" max="360" value="212"></label></div>
+                <div id="harmSwatches"></div>
+                <p style="font-size:13px;color:var(--ink-soft);margin-top:12px" id="harmDesc"></p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="note tip">
+          <h4><span class="ic">💡</span>给可视化选色系的实用建议</h4>
+          <p><strong>同一层级用同类色/邻近色</strong>（渐变感），<strong>对比双方用互补色</strong>（冷暖对照），
+          <strong>分类多时用低饱和的多色相</strong>。配色一旦超过 8 个色相，就该考虑改用形状、纹理或位置来编码。</p>
+        </div>
+
+        <div class="donebox" data-sec="ch03-s4"></div>
+      </section>
+
+      <!-- ════════ 3.5 ════════ -->
+      <section class="sec rv" id="s5">
+        <h2><span class="n">3.5</span>经典科研配色：直接可用的「安全牌」</h2>
+        <p class="sub">点击任意色块复制色值。</p>
+
+        <div class="demo">
+          <div class="demo-head"><span class="dt">画廊 · 六套公开发表的配色</span></div>
+          <div class="demo-body" id="palGallery"></div>
+          <div class="demo-foot"><span class="rd">点击色块复制十六进制值</span></div>
+        </div>
+
+        <div class="note key">
+          <h4><span class="ic">⭐</span>关键点：Okabe-Ito 为什么是金标准</h4>
+          <p>Okabe &amp; Ito (2008) 的八色是专门为<strong>色盲可读</strong>设计的：即使去掉色相信息，仅靠亮度也能区分大部分颜色。
+          Nature Methods 曾专门发文推荐它（Wong, 2011）。论文配图想不出错，就用它。</p>
+        </div>
+
+        <div class="donebox" data-sec="ch03-s5"></div>
+      </section>
+
+      <!-- ════════ 3.6 ════════ -->
+      <section class="sec rv" id="s6">
+        <h2><span class="n">3.6</span>对错案例：两张图说同一件事</h2>
+        <p class="sub">真实数据：企鹅三物种的体重分布。</p>
+
+        <div class="demo">
+          <div class="demo-head"><span class="dt">对照 · 同样数据，两种配色命运</span></div>
+          <div class="demo-body">
+            <div class="pair">
+              <div class="side bad"><h5>✗ 错误：定类数据用了彩虹 + 相似色</h5><div id="badChart"></div>
+                <p style="font-size:13px;color:var(--ink-soft);margin:8px 0 0">三个物种用了相近的红/橙/黄，且亮度不一致，读者难以稳定区分「哪种颜色是哪个物种」。</p></div>
+              <div class="side good"><h5>✓ 正确：Okabe-Ito 色盲友好定性配色</h5><div id="goodChart"></div>
+                <p style="font-size:13px;color:var(--ink-soft);margin:8px 0 0">三个物种用差异最大的三个色相，且通过色盲模拟依然可分。</p></div>
+            </div>
+          </div>
+          <div class="demo-foot"><span>数据：Palmer 企鹅 344 只 · 体重按物种分组</span></div>
+        </div>
+
+        <div class="donebox" data-sec="ch03-s6"></div>
+      </section>
+
+      <!-- ════════ 3.7 ════════ -->
+      <section class="sec rv" id="s7">
+        <h2><span class="n">3.7</span>低饱和配色：为什么「高级灰」耐看</h2>
+        <p class="sub">鲜艳但低饱和——主视觉的不刺眼秘诀。</p>
+
+        <p>
+          高饱和颜色适合<strong>小面积强调</strong>（一个重点、一条折线），大面积铺陈则需要降低饱和度。
+          这个生成器把任意色相转成「鲜明但低饱和」的配色组，适合做主视觉与背景。
+        </p>
+
+        <div class="demo">
+          <div class="demo-head"><span class="dt">生成器 · 低饱和配色组</span></div>
+          <div class="demo-body">
+            <div class="ctl">
+              <label>色相 H <input type="range" id="genH" min="0" max="360" value="215"></label>
+              <label>饱和度 <input type="range" id="genS" min="8" max="60" value="32"></label>
+              <label>数量 <input type="range" id="genN" min="3" max="8" value="6"></label>
+            </div>
+            <div id="genSwatches" style="display:flex;gap:8px;flex-wrap:wrap"></div>
+          </div>
+          <div class="demo-foot"><span class="rd" id="genStat">点击色块复制 · 建议主视觉饱和度 ≤ 40%</span></div>
+        </div>
+
+        <div class="donebox" data-sec="ch03-s7"></div>
+      </section>
+
+      <!-- ════════ 3.8 ════════ -->
+      <section class="sec rv" id="s8">
+        <h2><span class="n">3.8</span>色盲模拟：你的图在 8% 的男性眼里长什么样</h2>
+        <p class="sub">约 8% 男性、0.5% 女性有不同程度的色觉障碍。</p>
+
+        <p>
+          红绿色盲（protanopia / deuteranopia）最常见。用 Machado 的生理模型，
+          可以把任意颜色实时模拟成患者眼中的样子。下面用真实企鹅数据测试两套配色。
+        </p>
+
+        <div class="demo">
+          <div class="demo-head">
+            <span class="dt">演示 · CVD 模拟器</span>
+            <span class="dsub">切换色觉类型，看颜色是否还能区分</span>
+            <span class="spacer"></span>
+            <span class="chips" id="cvdChips"></span>
+          </div>
+          <div class="demo-body">
+            <div class="ctl">
+              <span style="font-size:13px">配色方案：</span>
+              <select id="cvdPal"></select>
+            </div>
+            <div id="cvdChart"></div>
+          </div>
+          <div class="demo-foot"><span class="rd" id="cvdStat"></span></div>
+        </div>
+
+        <div class="note key">
+          <h4><span class="ic">⭐</span>结论：色相区分是最脆弱的编码</h4>
+          <p>一旦换成红绿色盲视角，Tableau10 里的红绿立刻靠在一起；而 Okabe-Ito 依然保持可区分。
+          这正是<strong>论文配图必须用 Okabe-Ito、业务图慎用红绿</strong>的原因。
+          图例可读性 + 形状冗余（圆/三角/方）是双保险。</p>
+        </div>
+
+        <div class="donebox" data-sec="ch03-s8"></div>
+      </section>
+
+      <div style="padding:10px 0 40px;display:flex;gap:12px;flex-wrap:wrap">
+        <a class="btn ghost" href="ch02.html">← 上一展厅：流程</a>
+        <a class="btn" href="ch04.html">下一展厅：低维数据 →</a>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<script src="assets/js/d3.v7.min.js"></script>
+<script src="assets/js/common.js"></script>
+<script src="assets/js/refs.js"></script>
+<script src="assets/js/ch03.js"></script>
+</body>
+</html>
